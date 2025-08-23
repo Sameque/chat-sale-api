@@ -53,21 +53,21 @@ app.get("/messages/:userId/:contactId", async (req, res) => {
     res.json(data);
 });
 
-// const supabase = require("./supabase");
-// const jwt = require("jsonwebtoken");
+const supabase = require("./supabase");
+const jwt = require("jsonwebtoken");
 
-// io.use((socket, next) => {
-//     const token = socket.handshake.auth.token;
-//     if (!token) return next(new Error("Token não fornecido"));
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) return next(new Error("Token não fornecido"));
 
-//     try {
-//         const decoded = jwt.verify(token, "segredo_super_secreto");
-//         socket.user = decoded;
-//         next();
-//     } catch (err) {
-//         next(new Error("Token inválido"));
-//     }
-// });
+    try {
+        const decoded = jwt.verify(token, "segredo_super_secreto");
+        socket.user = decoded;
+        next();
+    } catch (err) {
+        next(new Error("Token inválido"));
+    }
+});
 
 
 // io.on("connection", (socket) => {
