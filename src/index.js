@@ -24,8 +24,8 @@ app.get("/", (req, res) => {
 });
 
 
-// // Rotas públicas
-// app.use("/auth", authRoutes);
+// Rotas públicas
+app.use("/auth", authRoutes);
 
 // // Exemplo de rota protegida
 // app.get("/profile", authMiddleware, (req, res) => {
