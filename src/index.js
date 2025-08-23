@@ -2,6 +2,8 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
 
 const authRoutes = require("./routes/auth");
 const authMiddleware = require("./middleware/auth");
@@ -18,9 +20,19 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
+// Carrega informações do package.json
+const packageJson = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8")
+);
+
 // Rotas REST (exemplo)
 app.get("/", (req, res) => {
-    res.send("API do Chat rodando 🚀");
+    res.send({
+        message: "API do Chat rodando 🚀",
+        name: packageJson.name,
+        version: packageJson.version,
+        description: packageJson.description
+    });
 });
 
 
