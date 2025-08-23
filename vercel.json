@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/index.js",  // Ou "api/index.js" se renomear
+      "src": "API/index.js",  // Ou "api/index.js" se renomear
       "use": "@vercel/node"
     }
   ],
