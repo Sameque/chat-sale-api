@@ -1,4 +1,8 @@
 {
+  
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  // resto do seu conteúdo aqui
+
   "version": 2,
   "builds": [
     {
