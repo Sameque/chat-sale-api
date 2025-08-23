@@ -27,31 +27,31 @@ app.get("/", (req, res) => {
 // Rotas públicas
 app.use("/auth", authRoutes);
 
-// // Exemplo de rota protegida
-// app.get("/profile", authMiddleware, (req, res) => {
-//     res.json({ message: "Perfil do usuário", user: req.user });
-// });
+// Exemplo de rota protegida
+app.get("/profile", authMiddleware, (req, res) => {
+    res.json({ message: "Perfil do usuário", user: req.user });
+});
 
-// app.get("/users", authMiddleware, async (req, res) => {
-//     const { data, error } = await supabase.from("users").select("id,username");
-//     if (error) return res.status(500).json({ error: error.message });
+app.get("/users", authMiddleware, async (req, res) => {
+    const { data, error } = await supabase.from("users").select("id,username");
+    if (error) return res.status(500).json({ error: error.message });
 
-//     const users = data.filter((u) => u.username !== req.user.username);
-//     res.json(users);
-// });
+    const users = data.filter((u) => u.username !== req.user.username);
+    res.json(users);
+});
 
-// app.get("/messages/:userId/:contactId", async (req, res) => {
-//     const { userId, contactId } = req.params;
+app.get("/messages/:userId/:contactId", async (req, res) => {
+    const { userId, contactId } = req.params;
 
-//     const { data, error } = await supabase
-//         .from("messages")
-//         .select("*")
-//         .or(`and(sender_id.eq.${userId},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${userId})`)
-//         .order("created_at", { ascending: true });
+    const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .or(`and(sender_id.eq.${userId},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${userId})`)
+        .order("created_at", { ascending: true });
 
-//     if (error) return res.status(400).json({ error: error.message });
-//     res.json(data);
-// });
+    if (error) return res.status(400).json({ error: error.message });
+    res.json(data);
+});
 
 // const supabase = require("./supabase");
 // const jwt = require("jsonwebtoken");
