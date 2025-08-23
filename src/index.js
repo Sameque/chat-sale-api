@@ -70,55 +70,53 @@ io.use((socket, next) => {
 });
 
 
-// io.on("connection", (socket) => {
+io.on("connection", (socket) => {
 
-//     socket.join(socket.user.username);
+    socket.join(socket.user.username);
 
-//     socket.on("privateMessage", async (receivedMsg) => {
-//         try {
+    socket.on("privateMessage", async (receivedMsg) => {
+        try {
 
-//             console.log("Mensagem recebido:", receivedMsg);
+            console.log("Mensagem recebido:", receivedMsg);
 
-//             const sendMsg = {
-//                 sender_id: receivedMsg.senderId,
-//                 receiver_id: receivedMsg.receiverId,
-//                 content: receivedMsg.content,
-//                 created_at: receivedMsg.createdAt || new Date().toISOString()
-//             };
+            const sendMsg = {
+                sender_id: receivedMsg.senderId,
+                receiver_id: receivedMsg.receiverId,
+                content: receivedMsg.content,
+                created_at: receivedMsg.createdAt || new Date().toISOString()
+            };
 
-//             console.log("Enviando mensagem:", sendMsg);
+            console.log("Enviando mensagem:", sendMsg);
             
-//             const { data, error } = await supabase
-//                 .from("messages_chat")
-//                 .insert([sendMsg])
-//                 .select()
-//                 .single();
+            const { data, error } = await supabase
+                .from("messages_chat")
+                .insert([sendMsg])
+                .select()
+                .single();
 
-//             if (error) {
-//                 console.error("Erro ao salvar mensagem:", error);
-//                 return;
-//             }
+            if (error) {
+                console.error("Erro ao salvar mensagem:", error);
+                return;
+            }
 
-//             console.log(socket.user, "enviou uma mensagem para", receivedMsg.receiver, ":", data);
+            console.log(socket.user, "enviou uma mensagem para", receivedMsg.receiver, ":", data);
             
-//             // envia para o destinatário e para o remetente
-//             io.to(receivedMsg.receiver).emit("privateMessage", data);
-//             io.to(socket.user.username).emit("privateMessage", data);
+            // envia para o destinatário e para o remetente
+            io.to(receivedMsg.receiver).emit("privateMessage", data);
+            io.to(socket.user.username).emit("privateMessage", data);
 
-//         } catch (err) {
-//             console.error("Erro:", err);
-//         }
-//     });
+        } catch (err) {
+            console.error("Erro:", err);
+        }
+    });
 
-//     socket.on("disconnect", () => {
-//         console.log("Usuário saiu:", socket.user.username);
-//     });
-// });
+    socket.on("disconnect", () => {
+        console.log("Usuário saiu:", socket.user.username);
+    });
+});
 
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
-
-// module.exports = server;
