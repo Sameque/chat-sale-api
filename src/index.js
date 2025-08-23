@@ -120,4 +120,4 @@ const PORT = 3000;
 //    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 //});
 
-module.exports = app;
+module.exports = server;
