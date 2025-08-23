@@ -24,101 +24,101 @@ app.get("/", (req, res) => {
 });
 
 
-// Rotas públicas
-app.use("/auth", authRoutes);
+// // Rotas públicas
+// app.use("/auth", authRoutes);
 
-// Exemplo de rota protegida
-app.get("/profile", authMiddleware, (req, res) => {
-    res.json({ message: "Perfil do usuário", user: req.user });
-});
+// // Exemplo de rota protegida
+// app.get("/profile", authMiddleware, (req, res) => {
+//     res.json({ message: "Perfil do usuário", user: req.user });
+// });
 
-app.get("/users", authMiddleware, async (req, res) => {
-    const { data, error } = await supabase.from("users").select("id,username");
-    if (error) return res.status(500).json({ error: error.message });
+// app.get("/users", authMiddleware, async (req, res) => {
+//     const { data, error } = await supabase.from("users").select("id,username");
+//     if (error) return res.status(500).json({ error: error.message });
 
-    const users = data.filter((u) => u.username !== req.user.username);
-    res.json(users);
-});
+//     const users = data.filter((u) => u.username !== req.user.username);
+//     res.json(users);
+// });
 
-app.get("/messages/:userId/:contactId", async (req, res) => {
-    const { userId, contactId } = req.params;
+// app.get("/messages/:userId/:contactId", async (req, res) => {
+//     const { userId, contactId } = req.params;
 
-    const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .or(`and(sender_id.eq.${userId},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${userId})`)
-        .order("created_at", { ascending: true });
+//     const { data, error } = await supabase
+//         .from("messages")
+//         .select("*")
+//         .or(`and(sender_id.eq.${userId},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${userId})`)
+//         .order("created_at", { ascending: true });
 
-    if (error) return res.status(400).json({ error: error.message });
-    res.json(data);
-});
+//     if (error) return res.status(400).json({ error: error.message });
+//     res.json(data);
+// });
 
-const supabase = require("./supabase");
-const jwt = require("jsonwebtoken");
+// const supabase = require("./supabase");
+// const jwt = require("jsonwebtoken");
 
-io.use((socket, next) => {
-    const token = socket.handshake.auth.token;
-    if (!token) return next(new Error("Token não fornecido"));
+// io.use((socket, next) => {
+//     const token = socket.handshake.auth.token;
+//     if (!token) return next(new Error("Token não fornecido"));
 
-    try {
-        const decoded = jwt.verify(token, "segredo_super_secreto");
-        socket.user = decoded;
-        next();
-    } catch (err) {
-        next(new Error("Token inválido"));
-    }
-});
+//     try {
+//         const decoded = jwt.verify(token, "segredo_super_secreto");
+//         socket.user = decoded;
+//         next();
+//     } catch (err) {
+//         next(new Error("Token inválido"));
+//     }
+// });
 
 
-io.on("connection", (socket) => {
+// io.on("connection", (socket) => {
 
-    socket.join(socket.user.username);
+//     socket.join(socket.user.username);
 
-    socket.on("privateMessage", async (receivedMsg) => {
-        try {
+//     socket.on("privateMessage", async (receivedMsg) => {
+//         try {
 
-            console.log("Mensagem recebido:", receivedMsg);
+//             console.log("Mensagem recebido:", receivedMsg);
 
-            const sendMsg = {
-                sender_id: receivedMsg.senderId,
-                receiver_id: receivedMsg.receiverId,
-                content: receivedMsg.content,
-                created_at: receivedMsg.createdAt || new Date().toISOString()
-            };
+//             const sendMsg = {
+//                 sender_id: receivedMsg.senderId,
+//                 receiver_id: receivedMsg.receiverId,
+//                 content: receivedMsg.content,
+//                 created_at: receivedMsg.createdAt || new Date().toISOString()
+//             };
 
-            console.log("Enviando mensagem:", sendMsg);
+//             console.log("Enviando mensagem:", sendMsg);
             
-            const { data, error } = await supabase
-                .from("messages_chat")
-                .insert([sendMsg])
-                .select()
-                .single();
+//             const { data, error } = await supabase
+//                 .from("messages_chat")
+//                 .insert([sendMsg])
+//                 .select()
+//                 .single();
 
-            if (error) {
-                console.error("Erro ao salvar mensagem:", error);
-                return;
-            }
+//             if (error) {
+//                 console.error("Erro ao salvar mensagem:", error);
+//                 return;
+//             }
 
-            console.log(socket.user, "enviou uma mensagem para", receivedMsg.receiver, ":", data);
+//             console.log(socket.user, "enviou uma mensagem para", receivedMsg.receiver, ":", data);
             
-            // envia para o destinatário e para o remetente
-            io.to(receivedMsg.receiver).emit("privateMessage", data);
-            io.to(socket.user.username).emit("privateMessage", data);
+//             // envia para o destinatário e para o remetente
+//             io.to(receivedMsg.receiver).emit("privateMessage", data);
+//             io.to(socket.user.username).emit("privateMessage", data);
 
-        } catch (err) {
-            console.error("Erro:", err);
-        }
-    });
+//         } catch (err) {
+//             console.error("Erro:", err);
+//         }
+//     });
 
-    socket.on("disconnect", () => {
-        console.log("Usuário saiu:", socket.user.username);
-    });
-});
+//     socket.on("disconnect", () => {
+//         console.log("Usuário saiu:", socket.user.username);
+//     });
+// });
 
-const PORT = process.env.PORT || 3000;
+// const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
 
-module.exports = server;
+// module.exports = server;
