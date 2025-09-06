@@ -1,28 +1,24 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
-const fs = require("fs");
-const path = require("path");
-
-const authRoutes = require("./routes/auth");
-const authMiddleware = require("./middleware/auth");
+import express from "express";
+import http from "http";
+import cors from "cors";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
+import authRoutes from "./routes/auth.js";
+import authMiddleware from "./middleware/auth.js";
+import supabase from "./supabase.js";
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-    },
-});
 
 app.use(cors());
 app.use(express.json());
 
-// Carrega informações do package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const packageJson = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8")
+    fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8")
 );
 
 // Rotas REST (exemplo)
@@ -35,17 +31,16 @@ app.get("/", (req, res) => {
     });
 });
 
-
 // Rotas públicas
 app.use("/auth", authRoutes);
 
-// Exemplo de rota protegida
+// rota protegida
 app.get("/profile", authMiddleware, (req, res) => {
     res.json({ message: "Perfil do usuário", user: req.user });
 });
 
 app.get("/users", authMiddleware, async (req, res) => {
-    const { data, error } = await supabase.from("users").select("id,username");
+    const { data, error } = await supabase.from("users").select("id, username");
     if (error) return res.status(500).json({ error: error.message });
 
     const users = data.filter((u) => u.username !== req.user.username);
@@ -65,70 +60,9 @@ app.get("/messages/:userId/:contactId", async (req, res) => {
     res.json(data);
 });
 
-const supabase = require("./supabase");
-const jwt = require("jsonwebtoken");
-
-io.use((socket, next) => {
-    const token = socket.handshake.auth.token;
-    if (!token) return next(new Error("Token não fornecido"));
-
-    try {
-        const decoded = jwt.verify(token, "segredo_super_secreto");
-        socket.user = decoded;
-        next();
-    } catch (err) {
-        next(new Error("Token inválido"));
-    }
-});
-
-
-io.on("connection", (socket) => {
-
-    socket.join(socket.user.username);
-
-    socket.on("privateMessage", async (receivedMsg) => {
-        try {
-
-            console.log("Mensagem recebido:", receivedMsg);
-
-            const sendMsg = {
-                sender_id: receivedMsg.senderId,
-                receiver_id: receivedMsg.receiverId,
-                content: receivedMsg.content,
-                created_at: receivedMsg.createdAt || new Date().toISOString()
-            };
-
-            console.log("Enviando mensagem:", sendMsg);
-            
-            const { data, error } = await supabase
-                .from("messages_chat")
-                .insert([sendMsg])
-                .select()
-                .single();
-
-            if (error) {
-                console.error("Erro ao salvar mensagem:", error);
-                return;
-            }
-
-            console.log(socket.user, "enviou uma mensagem para", receivedMsg.receiver, ":", data);
-            
-            // envia para o destinatário e para o remetente
-            io.to(receivedMsg.receiver).emit("privateMessage", data);
-            io.to(socket.user.username).emit("privateMessage", data);
-
-        } catch (err) {
-            console.error("Erro:", err);
-        }
-    });
-
-    socket.on("disconnect", () => {
-        console.log("Usuário saiu:", socket.user.username);
-    });
-});
-
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
-server.listen(PORT, () => {
-   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });

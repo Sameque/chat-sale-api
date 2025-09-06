@@ -1,7 +1,7 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const supabase = require("../supabase");
+import express from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import supabase from "../supabase.js";
 
 const router = express.Router();
 
@@ -18,8 +18,8 @@ router.post("/register", async (req, res) => {
             .select("*")
             .eq("username", username)
             .single();
-        
-            console.log("Usuário existente:", existing);
+
+        console.log("Usuário existente:", existing);
 
         if (existing) {
             console.log("Usuário já existe:", username);
@@ -34,8 +34,8 @@ router.post("/register", async (req, res) => {
         const { error } = await supabase
             .from("users")
             .insert([{ username, password: hashedPassword }]);
-        
-            console.log("Erro ao inserir usuário:", error);
+
+        console.log("Erro ao inserir usuário:", error);
 
         if (error) return res.status(500).json({ error: error.message });
 
@@ -81,4 +81,4 @@ router.post("/login", async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;
